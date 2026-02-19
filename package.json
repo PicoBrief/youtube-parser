@@ -1,0 +1,48 @@
+{
+  "name": "@pico-brief/youtube-parser",
+  "version": "1.0.0",
+  "description": "A TypeScript library for parsing YouTube videos, channels, playlists, and search results",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --import tsx --test tests/**/*.test.ts",
+    "test:unit": "node --import tsx --test tests/parsers.test.ts tests/utils.test.ts tests/config.test.ts tests/http.test.ts",
+    "test:integration": "node --import tsx --test tests/integration.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "youtube",
+    "parser",
+    "video",
+    "channel",
+    "playlist",
+    "transcript",
+    "search"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@pico-brief/fallback_value": "*",
+    "axios": "^1.7.0",
+    "https-proxy-agent": "^7.0.6",
+    "luxon": "^3.5.0",
+    "xmldom": "^0.6.0"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.4.0",
+    "@types/node": "^25.3.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0"
+  }
+}
