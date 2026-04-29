@@ -16,7 +16,7 @@ export type { SearchParseResult } from "./handlers/search.js";
 
 // ── Parsers ──────────────────────────────────────────────────────────────────
 export { extractVideos } from "./parsers/extract-videos.js";
-export { parseRawVideoListItem } from "./parsers/video-list-item.js";
+export { parseRawVideoListItem, parseLockupVideoListItem } from "./parsers/video-list-item.js";
 export { parseListItemData } from "./parsers/list-item.js";
 export { parseAgeText } from "./parsers/age.js";
 export { parseDuration } from "./parsers/duration.js";
