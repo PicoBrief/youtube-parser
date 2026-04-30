@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { parseAgeText } from "../src/parsers/age.js";
 import { parseDuration } from "../src/parsers/duration.js";
-import { parseRawVideoListItem } from "../src/parsers/video-list-item.js";
+import { parseVideoListItem } from "../src/parsers/video-list-item.js";
 import { parseListItemData } from "../src/parsers/list-item.js";
 import { extractVideos } from "../src/parsers/extract-videos.js";
 import { parseTranscriptJSON, parseTranscriptXml } from "../src/parsers/transcript.js";
@@ -70,9 +70,9 @@ describe("parseDuration", () => {
     });
 });
 
-// ── parseRawVideoListItem ────────────────────────────────────────────────────
+// ── parseVideoListItem ───────────────────────────────────────────────────────
 
-describe("parseRawVideoListItem", () => {
+describe("parseVideoListItem (legacy renderer shape)", () => {
     it("parses a full video object", () => {
         const raw = {
             videoId: "abc123",
@@ -91,7 +91,7 @@ describe("parseRawVideoListItem", () => {
             },
         };
 
-        const result = parseRawVideoListItem(raw);
+        const result = parseVideoListItem(raw);
         assert.strictEqual(result.id, "abc123");
         assert.strictEqual(result.type, "video");
         assert.strictEqual(result.title, "My Video");
@@ -111,7 +111,7 @@ describe("parseRawVideoListItem", () => {
             thumbnail: { thumbnails: [{ url: "https://example.com/thumb.jpg" }] },
         };
 
-        const result = parseRawVideoListItem(raw);
+        const result = parseVideoListItem(raw);
         assert.strictEqual(result.id, "def456");
         assert.strictEqual(result.title, "Fallback Title");
         assert.strictEqual(result.viewCount, undefined);
@@ -119,6 +119,54 @@ describe("parseRawVideoListItem", () => {
         assert.strictEqual(result.age, undefined);
         assert.strictEqual(result.channelName, null);
         assert.strictEqual(result.channelId, null);
+    });
+});
+
+describe("parseVideoListItem (lockupViewModel shape)", () => {
+    it("parses a lockup video", () => {
+        const raw = {
+            contentId: "lkp001",
+            contentType: "LOCKUP_CONTENT_TYPE_VIDEO",
+            contentImage: {
+                thumbnailViewModel: {
+                    image: {
+                        sources: [{ url: "https://img.example/t.jpg", width: 168, height: 94 }],
+                    },
+                    overlays: [
+                        {
+                            thumbnailBottomOverlayViewModel: {
+                                badges: [{ thumbnailBadgeViewModel: { text: "7:19" } }],
+                            },
+                        },
+                    ],
+                },
+            },
+            metadata: {
+                lockupMetadataViewModel: {
+                    title: { content: "Lockup Video Title" },
+                    metadata: {
+                        contentMetadataViewModel: {
+                            metadataRows: [
+                                {
+                                    metadataParts: [
+                                        { text: { content: "9.1K views" } },
+                                        { text: { content: "8 days ago" } },
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+
+        const result = parseVideoListItem(raw);
+        assert.strictEqual(result.id, "lkp001");
+        assert.strictEqual(result.title, "Lockup Video Title");
+        assert.strictEqual(result.thumbnail, "https://img.example/t.jpg");
+        assert.strictEqual(result.length, 439);
+        assert.strictEqual(result.viewCount, 9100);
+        assert.deepStrictEqual(result.age, { amount: 8, unit: "day" });
     });
 });
 

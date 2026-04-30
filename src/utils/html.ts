@@ -25,8 +25,7 @@ export function getJsonFromHtml(html: string, key: string, numChars: number = 2,
 
 /**
  * Extract the InnerTube API key from raw YouTube HTML.
+ * Patterns come from the paths.json config so they can be updated without
+ * a code release.
  */
-export function extractInnerTubeApiKey(html: string): string | null {
-    const match = html.match(/"INNERTUBE_API_KEY":\s*"([a-zA-Z0-9_-]+)"/);
-    return match?.[1] ?? null;
-}
+export { extractApiKey as extractInnerTubeApiKey } from "../dsl/html-extract.js";

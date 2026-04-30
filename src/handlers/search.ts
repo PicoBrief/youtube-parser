@@ -6,7 +6,7 @@ import type {
     SearchResultsType,
 } from "../types.js";
 import { fetchYoutubePage } from "../http/fetch-page.js";
-import { fetchNextPage, getContinuationData } from "../http/pagination.js";
+import { fetchNextPage } from "../http/pagination.js";
 import { getAllDescendantObjects } from "../utils/object.js";
 import { parseListItemData } from "../parsers/list-item.js";
 import { removeDuplicates } from "../utils/misc.js";
@@ -83,7 +83,7 @@ export class YouTubeSearchHandler {
             proxyUrl: bd.proxyUrl,
             clientData: bd.clientData,
             pageData: bd.pageData,
-            getContinuation: getContinuationData,
+            strategy: "default",
         });
 
         const items = extractSearchItems(bd.pageData)

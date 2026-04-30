@@ -16,11 +16,32 @@ export type { SearchParseResult } from "./handlers/search.js";
 
 // ── Parsers ──────────────────────────────────────────────────────────────────
 export { extractVideos } from "./parsers/extract-videos.js";
-export { parseRawVideoListItem, parseLockupVideoListItem } from "./parsers/video-list-item.js";
+export { parseVideoListItem } from "./parsers/video-list-item.js";
 export { parseListItemData } from "./parsers/list-item.js";
 export { parseAgeText } from "./parsers/age.js";
 export { parseDuration } from "./parsers/duration.js";
 export { parseTranscriptJSON, parseTranscriptXml } from "./parsers/transcript.js";
+
+// ── Path-extraction DSL ──────────────────────────────────────────────────────
+export { getPathsConfig, setPathsConfig, resetPathsConfig } from "./dsl/loader.js";
+export { resolveField, resolveItem, nodeMatchesItem } from "./dsl/resolver.js";
+export { TRANSFORMS, applyTransforms } from "./dsl/transforms.js";
+export { extractApiKey, extractJsonBlock } from "./dsl/html-extract.js";
+export { findContinuation } from "./dsl/pagination.js";
+export type { ContinuationData } from "./dsl/pagination.js";
+export { applyTemplate } from "./dsl/template.js";
+export type {
+    PathExpr,
+    FindInArrayExpr,
+    FieldSpec,
+    ItemSpec,
+    PathsConfig,
+    Transform,
+    HtmlBlockPattern,
+    HtmlExtractConfig,
+    ContinuationStrategy,
+    PaginationConfig,
+} from "./dsl/types.js";
 
 // ── HTTP ─────────────────────────────────────────────────────────────────────
 export { fetchYoutubePage } from "./http/fetch-page.js";

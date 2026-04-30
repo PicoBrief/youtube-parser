@@ -4,7 +4,7 @@ import type {
     HandlerErrorCode,
 } from "../types.js";
 import { fetchYoutubePage } from "../http/fetch-page.js";
-import { fetchNextPage, getContinuationDataDeep } from "../http/pagination.js";
+import { fetchNextPage } from "../http/pagination.js";
 import { extractVideos } from "../parsers/extract-videos.js";
 import { removeDuplicates } from "../utils/misc.js";
 
@@ -59,7 +59,7 @@ export class YouTubePlaylistHandler {
             proxyUrl: bd.proxyUrl,
             clientData: bd.clientData,
             pageData: bd.pageData,
-            getContinuation: getContinuationDataDeep,
+            strategy: "deep",
         });
 
         const videos = extractVideos(bd.pageData);

@@ -2,7 +2,8 @@ import { racePromises } from "../utils/async.js";
 import { makeHttpRequest } from "./request.js";
 import { generateProxyUrl } from "./proxy.js";
 import { extractErrorMessage } from "../utils/misc.js";
-import { unescapeHtml, getJsonFromHtml, extractInnerTubeApiKey } from "../utils/html.js";
+import { unescapeHtml } from "../utils/html.js";
+import { extractApiKey, extractJsonBlock } from "../dsl/html-extract.js";
 import type { FetchPageSuccessResponse, FetchPageFailureResponse, FetchPageErrorCode } from "../types.js";
 
 /**
@@ -46,19 +47,12 @@ export async function fetchYoutubePage(params: {
             }
         }
 
-        const apiKey = extractInnerTubeApiKey(html);
-        const clientData = JSON.parse(
-            `${getJsonFromHtml(html, "INNERTUBE_CONTEXT", 2, '"}},')}"}}`
-        );
-        const pageData = JSON.parse(
-            `${getJsonFromHtml(html, "var ytInitialData = ", 0, "};")}}`
-        );
-        let playerData = null;
-        try {
-            playerData = JSON.parse(
-                `${getJsonFromHtml(html, "var ytInitialPlayerResponse = ", 0, "};")}}`
-            );
-        } catch {}
+        const apiKey = extractApiKey(html);
+        const clientData = extractJsonBlock(html, "innerTubeContext");
+        if (clientData === null) throw new Error("clientData not found in HTML");
+        const pageData = extractJsonBlock(html, "ytInitialData");
+        if (pageData === null) throw new Error("pageData not found in HTML");
+        const playerData = extractJsonBlock(html, "ytInitialPlayerResponse");
 
         return { success: true, html, cookies, proxyUrl, apiKey, clientData, pageData, playerData };
     } catch (e) {

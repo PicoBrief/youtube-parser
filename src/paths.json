@@ -1,0 +1,116 @@
+{
+    "version": 1,
+    "html": {
+        "apiKey": {
+            "patterns": ["\"INNERTUBE_API_KEY\":\\s*\"([a-zA-Z0-9_-]+)\""]
+        },
+        "blocks": {
+            "innerTubeContext": [
+                { "key": "INNERTUBE_CONTEXT", "numChars": 2, "stop": "\"}},", "suffix": "\"}}" }
+            ],
+            "ytInitialData": [
+                { "key": "var ytInitialData = ", "numChars": 0, "stop": "};", "suffix": "}" }
+            ],
+            "ytInitialPlayerResponse": [
+                { "key": "var ytInitialPlayerResponse = ", "numChars": 0, "stop": "};", "suffix": "}" }
+            ]
+        }
+    },
+    "pagination": {
+        "continuation": {
+            "strategies": {
+                "default": [
+                    { "type": "find_key", "key": "continuationEndpoint" }
+                ],
+                "deep": [
+                    {
+                        "type": "find_descendant_last",
+                        "requireKeys": ["clickTrackingParams", "continuationCommand"]
+                    }
+                ]
+            },
+            "tokenPaths": ["continuationCommand.token"],
+            "clickTrackingPaths": ["clickTrackingParams"]
+        },
+        "sortChip": {
+            "containerKey": "feedFilterChipBarRenderer",
+            "contentsPath": "contents",
+            "endpointPath": "chipCloudChipRenderer.navigationEndpoint",
+            "indexBySort": { "newest": 0, "popular": 1, "oldest": 2 }
+        },
+        "request": {
+            "url": "https://www.youtube.com/youtubei/v1/{{endpoint}}?key={{apiKey}}",
+            "method": "POST",
+            "headers": {
+                "X-YouTube-Client-Name": "1",
+                "X-YouTube-Client-Version": "{{clientData.client.clientVersion}}",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                "Accept-Language": "en"
+            },
+            "body": {
+                "context": {
+                    "clickTracking": { "clickTrackingParams": "{{clickTrackingParams}}" },
+                    "client": "{{clientData.client}}"
+                },
+                "continuation": "{{continuationToken}}"
+            }
+        }
+    },
+    "videoListItem": {
+        "required": ["id", "title", "thumbnail"],
+        "fields": {
+            "id": {
+                "paths": ["videoId", "contentId"]
+            },
+            "title": {
+                "paths": [
+                    "title.runs[0].text",
+                    "title.simpleText",
+                    "metadata.lockupMetadataViewModel.title.content"
+                ]
+            },
+            "thumbnail": {
+                "paths": [
+                    "thumbnail.thumbnails[0].url",
+                    "contentImage.thumbnailViewModel.image.sources[0].url"
+                ]
+            },
+            "length": {
+                "paths": [
+                    "lengthText.simpleText",
+                    {
+                        "find_in_array": "contentImage.thumbnailViewModel.overlays[*].thumbnailBottomOverlayViewModel.badges[*].thumbnailBadgeViewModel.text",
+                        "match": "^\\d+(:\\d+){1,2}$"
+                    }
+                ],
+                "transform": "duration"
+            },
+            "viewCount": {
+                "paths": [
+                    "viewCountText.simpleText",
+                    {
+                        "find_in_array": "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows[*].metadataParts[*].text.content",
+                        "match": "view"
+                    }
+                ],
+                "transform": "abbreviated_count"
+            },
+            "age": {
+                "paths": [
+                    "publishedTimeText.simpleText",
+                    {
+                        "find_in_array": "metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows[*].metadataParts[*].text.content",
+                        "match": "ago"
+                    }
+                ],
+                "transform": "age_text"
+            },
+            "channelName": {
+                "paths": ["shortBylineText.runs[0].text"]
+            },
+            "channelId": {
+                "paths": ["shortBylineText.runs[0].navigationEndpoint.browseEndpoint.browseId"]
+            }
+        }
+    }
+}

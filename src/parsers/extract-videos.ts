@@ -1,44 +1,32 @@
 import type { YouTubeVideoListItem } from "../types.js";
+import type { ItemSpec } from "../dsl/types.js";
 import { getAllDescendantObjects } from "../utils/object.js";
-import { parseRawVideoListItem, parseLockupVideoListItem } from "./video-list-item.js";
+import { nodeMatchesItem } from "../dsl/resolver.js";
+import { getPathsConfig } from "../dsl/loader.js";
+import { parseVideoListItem } from "./video-list-item.js";
 
 /**
- * Extract all video list items from a YouTube page data object.
- * Handles two layouts:
- *   1. Legacy `*Renderer` objects with videoId + thumbnail + title.
- *   2. Newer `lockupViewModel` objects with contentType=LOCKUP_CONTENT_TYPE_VIDEO
- *      (used on channel "Videos" tabs as of 2026).
+ * Extract all video list items from a YouTube page-data tree. An object
+ * qualifies as a video item iff every field listed in `spec.required`
+ * resolves via at least one of its declared paths — this naturally handles
+ * any layout YouTube uses, as long as paths.json has an entry for it.
  * Deduplicates by video ID.
  */
-export function extractVideos(pageData: Record<string, any>): YouTubeVideoListItem[] {
+export function extractVideos(
+    pageData: Record<string, any>,
+    spec?: ItemSpec
+): YouTubeVideoListItem[] {
+    const itemSpec = spec ?? getPathsConfig().videoListItem;
     const matches = getAllDescendantObjects({
         rootNode: pageData,
-        isMatch: ({ node }) => {
-            if (Array.isArray(node) || typeof node !== "object" || node === null) return false;
-            if (isLockupVideo(node)) return true;
-            const keys = Object.keys(node).map((k) => k.toLowerCase());
-            const hasVideoId = keys.includes("videoid") || keys.includes("video_id");
-            const hasThumbnail = keys.includes("thumbnail") || keys.includes("thumbnails");
-            const hasTitle = keys.includes("title");
-            return hasVideoId && hasThumbnail && hasTitle;
-        },
+        isMatch: ({ node }) => nodeMatchesItem(node, itemSpec),
     });
 
     const unique = new Map<string, YouTubeVideoListItem>();
     for (const raw of matches) {
-        const item = isLockupVideo(raw)
-            ? parseLockupVideoListItem(raw)
-            : parseRawVideoListItem(raw);
-        if (!item.id) continue;
-        if (!unique.has(item.id)) unique.set(item.id, item);
+        const item = parseVideoListItem(raw, itemSpec);
+        if (!item.id || unique.has(item.id)) continue;
+        unique.set(item.id, item);
     }
     return Array.from(unique.values());
-}
-
-function isLockupVideo(node: Record<string, any>): boolean {
-    return (
-        node.contentType === "LOCKUP_CONTENT_TYPE_VIDEO" &&
-        typeof node.contentId === "string" &&
-        node.contentImage != null
-    );
 }

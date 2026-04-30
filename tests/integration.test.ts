@@ -166,6 +166,18 @@ describe("integration", () => {
             assert.ok(video.id.length > 0, "Video should have an ID");
             assert.ok(video.title.length > 0, "Video should have a title");
         });
+
+        it("loads more videos via continuation", { timeout: TIMEOUT }, async () => {
+            const handler = new YouTubeChannelHandler();
+            await handler.load(TEST_CHANNEL_ID);
+
+            const before = handler.videoListItems.length;
+            assert.ok(before > 0, "Should have initial videos");
+
+            await handler.fetchMoreVideos();
+            const after = handler.videoListItems.length;
+            assert.ok(after > before, `Expected more videos after pagination (got ${before} → ${after})`);
+        });
     });
 
     // ── YouTubePlaylistHandler ───────────────────────────────────────────────
